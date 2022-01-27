@@ -1,149 +1,79 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField]
-    private int size = 15;
     
-    [SerializeField]
-    private int numberOfObstacles = 3;
 
-    [SerializeField]
-    private int minBoxes = 2;
-
-    [SerializeField]
-    private int maxBoxes = 5;
-
-    [SerializeField]
-    private GameObject groundGameObject;
-
-    private List<GameObject> groundGameObjects = new List<GameObject>();
-    
-    [SerializeField]
-    private GameObject wallGameObject;
-    
-    private List<Vector3> obstaclesPositions = new List<Vector3>();
-
-    [SerializeField]
-    private GameObject boxGameObject;
-    
-    private List<Vector3> boxesPositions = new List<Vector3>();
-
-    [SerializeField]
-    private GameObject zoneGameObject;
-    
-    private List<Vector3> zonesPositions = new List<Vector3>();
-
-    private int numberZones;
-    
-    
-    // Start is called before the first frame update
-    void Start()
+    public enum GameState
     {
-        InitiateObstaclesPositions();
-        // InitiateZonesPositions();
-        // InitiateBoxesPositions();
-        for (int r = 0; r < size; r++)
-        {
-            for (int c = 0; c < size; c++)
-            {
-                bool bIsBorder = c == 0 || c == size - 1 || r == 0 || r == size - 1;
-                if (bIsBorder)
-                {
-                    Instantiate(wallGameObject, new Vector3(c, 1, r), transform.rotation);
-                }
-                groundGameObjects.Add(Instantiate(groundGameObject, new Vector3(c,0,r), transform.rotation));
-            }
-        }
-
-        foreach (var obstaclePosition in obstaclesPositions)
-        {
-            Instantiate(wallGameObject, obstaclePosition, transform.rotation);
-        }
-        
-        /*foreach (var zonePosition in zonesPositions)
-        {
-            Instantiate(zoneGameObject, zonePosition, transform.rotation);
-        }
-        
-        foreach (var boxPosition in boxesPositions)
-        {
-            Instantiate(boxGameObject, boxPosition, transform.rotation);
-        }*/
+        Init,
+        Running,
+        Finished
     }
 
-    private void InitiateObstaclesPositions()
+    public GameState State { get; private set; } = GameState.Init;
+
+    private void Start()
     {
-
-        for (int i = 0; i < numberOfObstacles; i++)
-        {
-            Vector3 obstaclePosition = new Vector3();
-
-            do
-            {
-                obstaclePosition.Set(
-                    Random.Range(1, size),
-                    0.5f,
-                    Random.Range(1, size)
-                );
-            } while (bIsSpaceFree(obstaclePosition));
-
-            obstaclesPositions.Add(obstaclePosition);
-        }
+        playerLocationLog = GameObject.Find("Player").GetComponent<LocationLog>();
     }
+
+
+    public delegate int GameStartedDelegate();
+
+    public GameStartedDelegate OnGameStarted;
+
     
-    private void InitiateZonesPositions()
+    public delegate void GameFinishedDelegate();
+
+    public GameFinishedDelegate OnGameFinished;
+
+    private int score = 0;
+    private int maxScore = 0;
+    private List<LocationLog> locationLogs = new List<LocationLog>();
+    private LocationLog playerLocationLog;
+
+
+    private void CheckEndGame()
     {
-        numberZones = Random.Range(minBoxes, maxBoxes + 1);
-
-        for (int i = 0; i < numberZones; i++)
-        {
-            Vector3 zonePosition = new Vector3();
-
-            do
-            {
-                zonePosition.Set(
-                    Random.Range(1, size),
-                    0,
-                    Random.Range(1, size)
-                );
-            } while (bIsSpaceFree(zonePosition));
-
-            zonesPositions.Add(zonePosition);
-        }
-    }
-    
-    private void InitiateBoxesPositions()
-    {
-        for (int i = 0; i < numberZones; i++)
-        {
-            Vector3 boxPosition = new Vector3();
-
-            do
-            {
-                boxPosition.Set(
-                    Random.Range(1, size - 1),
-                    1,
-                    Random.Range(1, size - 1)
-                );
-            } while (bIsSpaceFree(boxPosition));
-
-            boxesPositions.Add(boxPosition);
-        }
+        if (score != maxScore) return;
+        Debug.Log("Victoire !");
+        State = GameState.Finished;
     }
 
-    private bool bIsSpaceFree(Vector3 position)
+    public void IncrementScore()
     {
-        return obstaclesPositions.All(obstaclePosition => obstaclePosition != position)
-               && zonesPositions.All(zonePosition => zonePosition != position) 
-               && boxesPositions.All(boxPosition => boxPosition != position);
+        ++score;
+        CheckEndGame();
+    }
+    public void DecrementScore()
+    {
+        --score;
     }
     
 
+    public void StartGame()
+    {
+        maxScore = OnGameStarted();
+        State = GameState.Running;
+    }
+
+    public void PushToLocationLogs(LocationLog moveBox)
+    {
+        locationLogs.Add(moveBox);
+        playerLocationLog.SavePlayerLocation();
+    }
     
+    public void Undo()
+    {
+        if (State != GameState.Running) return;
+        int lastIndex = locationLogs.Count - 1;
+        if (lastIndex >= 0)
+        {
+            locationLogs[lastIndex].UndoPosition();
+            locationLogs.RemoveAt(lastIndex);
+        } 
+        playerLocationLog.UndoPositionAndRotation();
+    }
 }
