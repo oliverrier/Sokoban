@@ -15,12 +15,12 @@ public class MoveBox : MonoBehaviour
 
     }
 
-    private bool CanPushBox() => gameManager.State == GameManager.GameState.Running && bIsPlayerColliding && Input.GetKeyDown(KeyCode.Space) &&
+    private bool CanPushBox() => gameManager.state == GameManager.GameState.Running && bIsPlayerColliding && Input.GetKeyDown(KeyCode.Space) &&
                                  !Physics.Raycast(transform.position, transform.TransformDirection(normal), 0.5f);
     private void Update()
     {
         if (!CanPushBox()) return;
-        locationLog.SaveBoxLocation();
+        locationLog.LogBoxLocation();
             
         if (normal == transform.forward)
         {

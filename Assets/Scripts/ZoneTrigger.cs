@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ZoneTrigger : MonoBehaviour
@@ -14,7 +11,7 @@ public class ZoneTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (gameManager.State == GameManager.GameState.Running && other.gameObject.CompareTag("Box"))
+        if (gameManager.state == GameManager.GameState.Running && other.gameObject.CompareTag("Box"))
         {
             gameManager.IncrementScore();
         }
@@ -23,7 +20,7 @@ public class ZoneTrigger : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (gameManager.State == GameManager.GameState.Running && other.gameObject.CompareTag("Box"))
+        if (gameManager.state == GameManager.GameState.Running && other.gameObject.CompareTag("Box"))
         {
             gameManager.DecrementScore();
         }    

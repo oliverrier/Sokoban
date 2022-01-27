@@ -49,29 +49,30 @@ public class GameGeneration : MonoBehaviour
     
     int InitGame()
     {
-        InitiateObstaclesPositions();
-        InitiateZonesPositions();
-        InitiateBoxesPositions();
         for (int r = 0; r < size; r++)
         {
             for (int c = 0; c < size; c++)
             {
                 bool bIsBorder = c == 0 || c == size - 1 || r == 0 || r == size - 1;
-                if (bIsBorder)
+                if (zonesPositions.Any(zonePosition => zonePosition.x == c && zonePosition.z == r))
                 {
-                    Instantiate(wallGameObject, new Vector3(c, 1, r), transform.rotation);
+                    Instantiate(zoneGameObject, new Vector3(c, 0, r), transform.rotation);
+
                 }
-                groundGameObjects.Add(Instantiate(groundGameObject, new Vector3(c,0,r), transform.rotation));
+                else
+                {
+                    if (bIsBorder)
+                    {
+                        Instantiate(wallGameObject, new Vector3(c, 1, r), transform.rotation);
+                    }
+                    groundGameObjects.Add(Instantiate(groundGameObject, new Vector3(c,0,r), transform.rotation));
+                }
+                
             }
         }
         foreach (var obstaclePosition in obstaclesPositions)
         {
             Instantiate(wallGameObject, obstaclePosition, transform.rotation);
-        }
-        
-        foreach (var zonePosition in zonesPositions)
-        {
-            Instantiate(zoneGameObject, zonePosition, transform.rotation);
         }
         
         foreach (var boxPosition in boxesPositions)

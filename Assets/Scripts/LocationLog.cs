@@ -14,7 +14,7 @@ public class LocationLog : MonoBehaviour
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
     }
 
-    public void SaveBoxLocation()
+    public void LogBoxLocation()
     {
         oldLocations.Add(transform.position);
         gameManager.PushToLocationLogs(GetComponent<LocationLog>());
@@ -29,7 +29,7 @@ public class LocationLog : MonoBehaviour
         oldRotations.Add(transform.rotation);
     }
     
-    public void SavePlayerLocation()
+    public void LogPlayerLocation()
     {
         SavePosition();
         SaveRotation();

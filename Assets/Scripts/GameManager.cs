@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour
         Finished
     }
 
-    public GameState State { get; private set; } = GameState.Init;
+    public GameState state { get; private set; } = GameState.Init;
 
     private void Start()
     {
@@ -29,8 +29,8 @@ public class GameManager : MonoBehaviour
 
     public GameFinishedDelegate OnGameFinished;
 
-    private int score = 0;
-    private int maxScore = 0;
+    private int score;
+    private int maxScore;
     private List<LocationLog> locationLogs = new List<LocationLog>();
     private LocationLog playerLocationLog;
 
@@ -39,12 +39,13 @@ public class GameManager : MonoBehaviour
     {
         if (score != maxScore) return;
         Debug.Log("Victoire !");
-        State = GameState.Finished;
+        state = GameState.Finished;
     }
 
     public void IncrementScore()
     {
         ++score;
+        Debug.Log(score);
         CheckEndGame();
     }
     public void DecrementScore()
@@ -56,18 +57,18 @@ public class GameManager : MonoBehaviour
     public void StartGame()
     {
         maxScore = OnGameStarted();
-        State = GameState.Running;
+        state = GameState.Running;
     }
 
     public void PushToLocationLogs(LocationLog moveBox)
     {
         locationLogs.Add(moveBox);
-        playerLocationLog.SavePlayerLocation();
+        playerLocationLog.LogPlayerLocation();
     }
     
     public void Undo()
     {
-        if (State != GameState.Running) return;
+        if (state != GameState.Running) return;
         int lastIndex = locationLogs.Count - 1;
         if (lastIndex >= 0)
         {
